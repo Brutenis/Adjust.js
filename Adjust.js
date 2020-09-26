@@ -1,6 +1,6 @@
 class Adjust {
   constructor() {
-    this.version = "1.0.0";
+    this.version = "1.0";
     this.name = `${this.constructor.name}.js`;
     console.info(`This site is running version ${this.version} of ${this.name}!`);
   }
