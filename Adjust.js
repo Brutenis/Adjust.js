@@ -71,7 +71,7 @@ class Adjust {
                   })
 
                   elements.forEach(element => {
-                    element.style.height = `${max}px`;
+                    element.style.width = `${max}px`;
                   })
                 }
 
