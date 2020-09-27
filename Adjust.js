@@ -11,11 +11,11 @@ class Adjust {
 
     switch (error) {
       case "classNotFound":
-        message = `${this.name}: The DOM doesn't seem to have elements with a class name of "${name}"`;
+        message = `${this.name}: The DOM doesn't seem to have elements with a class name of "${name}"!`;
         break;
       
       case "noClassSet":
-        message = `${this.name}: The "className" parameter is required when calling the "${name}" method!`;
+        message = `${this.name}: The selector parameters are required when calling the "${name}" method!`;
         break;
 
       case "noParameters":
@@ -36,6 +36,10 @@ class Adjust {
 
       case "notBool":
         message = `${this.name}: The ${name} parameter has to be true or false (boolean)!`;
+        break;
+
+      case "idNotFound":
+        message = `${this.name}: The DOM doesn't seem to have an element with an ID of "${name}"`;
     }
 
     console.warn(message);
@@ -213,10 +217,78 @@ class Adjust {
           this.warn("classNotFound", data.containerClass);
         }
       } else {
-        this.warn("classNotSet", "fontSizer");
+        this.warn("noClassSet", "fontSizer");
       }
     } else {
       this.warn("noParameters", "fontSizer");
+    }
+  }
+
+  cloner(data) {
+    if (data) {
+      if (data.modelID && data.targetClass) {
+        if (document.getElementById(data.modelID)) {
+          if (document.getElementsByClassName(data.targetClass)[0]) {
+            if (data.type && (data.type.toLowerCase() == "height" || data.type.toLowerCase() == "width")) {
+              const model = document.getElementById(data.modelID);
+              const target = Array.from(document.getElementsByClassName(data.targetClass));
+  
+              const minWidth = data.minWidth ? data.minWidth : 0;
+              const maxWidth = data.maxWidth ? data.maxWidth : Number.MAX_VALUE;
+  
+              const execute = () => {
+                if (window.innerWidth >= minWidth && window.innerWidth <= maxWidth) {
+                  if (data.type == "height") {
+                    const modelHeight = model.clientHeight;
+                    target.forEach(element => {
+                      element.style.height = `${modelHeight}px`;
+                    })
+
+                  } else {
+                    const modelWidth = model.clientWidth;
+                    target.forEach(element => {
+                      element.style.width = `${modelWidth}px`;
+                    })
+                  }
+
+                } else {
+                  if (data.type == "height") {
+                    target.forEach(element => {
+                      element.style.height = "auto";
+                    })
+
+                  } else {
+                    target.forEach(element => {
+                      element.style.width = "auto";
+                    })
+                  }
+                  
+                }
+              }
+
+              if (typeof minWidth != "number") {
+                this.warn("notNumber", "minWidth");
+              } else if (typeof maxWidth != "number") {
+                this.warn("notNumber", "maxWidth");
+              } else {
+                window.addEventListener("load", execute);
+                window.addEventListener("resize", execute);
+              }
+
+            } else {
+              this.warn("typeNotFound", `"width" or "height"`);
+            }
+          } else {
+            this.warn("classNotFound", data.targetClass);
+          }
+        } else {
+          this.warn("idNotFound", data.modelID);
+        }
+      } else {
+        this.warn("noClassSet", "cloner");
+      }
+    } else {
+      this.warn("noParameters", "cloner");
     }
   }
 }
