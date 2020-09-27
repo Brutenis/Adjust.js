@@ -28,6 +28,14 @@ class Adjust {
       
       case "typeNotFound":
         message = `${this.name}: The "type" parameter has to be ${name}!`;
+        break;
+
+      case "sizeNotFound":
+        message = `${this.name}: The "size" parameter has to be a number when calling the "${name}" method!`;
+        break;
+
+      case "notBool":
+        message = `${this.name}: The ${name} parameter has to be true or false (boolean)!`;
     }
 
     console.warn(message);
@@ -112,6 +120,103 @@ class Adjust {
       }
     } else {
       this.warn("noParameters", "equalizeHeights");
+    }
+  }
+
+  fontSizer(data) {
+    if (data) {
+      if (data.containerClass) {
+        if (document.getElementsByClassName(data.containerClass)[0]) {
+          if (data.type && (data.type.toLowerCase() == "height" || data.type.toLowerCase() == "width")) {
+            if (data.size && typeof data.size == "number") {
+              const containers = Array.from(document.getElementsByClassName(data.containerClass));
+              let childPresent = false;
+              let rounded = false;
+              let size = data.size / 1000;
+
+              const minWidth = data.minWidth ? data.minWidth : 0;
+              const maxWidth = data.maxWidth ? data.maxWidth : Number.MAX_VALUE;
+
+              if (data.rounded) {
+                if (typeof data.rounded == "boolean") {
+                  rounded = true;
+                } else {
+                  rounded = false;
+                  this.warn("notBool", "rounded");
+                }
+              }
+    
+              if (data.childClass) {
+                if (document.getElementsByClassName(data.childClass)[0]) {
+                  childPresent = true;
+                } else {
+                  this.warn("classNotFound", data.childClass);
+                }
+              } else {
+                childPresent = false;
+              }
+
+              const execute = () => {
+                if (window.innerWidth >= minWidth && window.innerWidth <= maxWidth) {
+                  containers.forEach(container => {
+                    let containerSize = 0;
+  
+                    if (data.type == "height") {
+                      containerSize = container.clientHeight;
+                    } else {
+                      containerSize = container.clientWidth;
+                    }
+  
+                    const calculatedFontSize = rounded ? Math.floor(containerSize * size) : containerSize * size;
+                    
+                    if (childPresent) {
+                      
+                      const children = Array.from(container.getElementsByClassName(data.childClass));
+                      children.forEach(child => {
+                        child.style.fontSize = `${calculatedFontSize}px`;
+                      })
+                    } else {
+                      container.style.fontSize = `${calculatedFontSize}px`;
+                    }
+                  })
+                } else {
+                  containers.forEach(container => {
+                    if (childPresent) {
+                      
+                      const children = Array.from(container.getElementsByClassName(data.childClass));
+                      children.forEach(child => {
+                        child.style.fontSize = "";
+                      })
+                    } else {
+                      container.style.fontSize = "";
+                    }
+                  })
+                }
+              }
+
+              if (typeof minWidth != "number") {
+                this.warn("notNumber", "minWidth");
+              } else if (typeof maxWidth != "number") {
+                this.warn("notNumber", "maxWidth");
+              } else {
+                window.addEventListener("load", execute);
+                window.addEventListener("resize", execute);
+              }
+
+            } else {
+              this.warn("sizeNotFound", "fontSizer");
+            }
+          } else {
+            this.warn("typeNotFound", `"width" or "height"`);
+          }
+        } else {
+          this.warn("classNotFound", data.containerClass);
+        }
+      } else {
+        this.warn("classNotSet", "fontSizer");
+      }
+    } else {
+      this.warn("noParameters", "fontSizer");
     }
   }
 }
