@@ -296,7 +296,7 @@ class Adjust {
     }
   }
 
-  stretcher = (data) => {
+  stretcher(data) {
     if (data) {
       if (data.className) {
         if (document.getElementsByClassName(data.className)[0]) {
