@@ -40,6 +40,10 @@ class Adjust {
 
       case "idNotFound":
         message = `${this.name}: The DOM doesn't seem to have an element with an ID of "${name}"`;
+        break;
+
+      case "percentageNotFound":
+        message = `${this.name}: The "percentage" parameter has to be a number when calling the "${name}" method!`;
     }
 
     console.warn(message);
@@ -289,6 +293,65 @@ class Adjust {
       }
     } else {
       this.warn("noParameters", "cloner");
+    }
+  }
+
+  stretcher = (data) => {
+    if (data) {
+      if (data.className) {
+        if (document.getElementsByClassName(data.className)[0]) {
+          if (data.percentage && typeof data.percentage == "number") {
+            if (data.type && (data.type.toLowerCase() == "height" || data.type.toLowerCase() == "width")) {
+              const elements = Array.from(document.getElementsByClassName(data.className));
+
+              const minWidth = data.minWidth ? data.minWidth : 0;
+              const maxWidth = data.maxWidth ? data.maxWidth : Number.MAX_VALUE;
+
+              const execute = () => {
+                if (window.innerWidth >= minWidth && window.innerWidth <= maxWidth) {
+                  elements.forEach(element => {
+                    if (data.type == "width") {
+                      const elementHeight = element.clientHeight;
+                      const widthToApply = elementHeight * (data.percentage / 100);
+                      element.style.width = `${widthToApply}px`;
+                    } else {
+                      const elementWidth = element.clientWidth;
+                      const heightToApply = elementWidth * (data.percentage / 100);
+                      element.style.height = `${heightToApply}px`;
+                    }
+                  })
+                } else {
+                  elements.forEach(element => {
+                    if (data.type == "width") {
+                      element.style.width = "auto";
+                    } else {
+                      element.style.height = "auto";
+                    }
+                  })
+                }
+              }
+
+              if (typeof minWidth != "number") {
+                this.warn("notNumber", "minWidth");
+              } else if (typeof maxWidth != "number") {
+                this.warn("notNumber", "maxWidth");
+              } else {
+                window.addEventListener("load", execute);
+                window.addEventListener("resize", execute);
+              }
+
+            } else {
+              this.warn("typeNotFound", `"width" or "height"`);
+            }
+          } else {
+            this.warn("percentageNotFound", "stretcher");
+          }
+        } else {
+          this.warn("classNotFound", data.className);
+        }
+      } else {
+        this.warn("noClassSet", "stretcher");
+      }
     }
   }
 }
